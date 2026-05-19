@@ -1,77 +1,132 @@
-import os
-import requests
-from flask import Flask, request, jsonify, render_template
-from flask_cors import CORS
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlexBudget AI | 智能特种兵旅游规划师</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-amber-50 to-orange-50 min-h-screen font-sans text-slate-800">
 
-app = Flask(__name__)
-CORS(app)
+    <header class="bg-white/80 backdrop-blur shadow-sm sticky top-0 z-10">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-compass text-orange-500 text-2xl animate-spin-slow"></i>
+                <h1 class="text-xl font-bold text-slate-800">FlexBudget <span class="text-orange-500">AI</span></h1>
+            </div>
+            <span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-medium">阶段二：变现逻辑验证版</span>
+        </div>
+    </header>
 
-# ==========================================
-# 你的专属密钥配置
-# ==========================================
-API_KEY = "sk-48bf10f821904382ae63972a30f5f6db"
-API_URL = "https://api.deepseek.com/v1/chat/completions"
+    <main class="max-w-5xl mx-auto px-4 py-8">
+        <div class="bg-white p-8 rounded-3xl shadow-xl shadow-orange-100/50 border border-orange-100 mb-8">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-black text-slate-800">定制你的极限预算行程单</h2>
+                <p class="text-slate-500 text-sm mt-1">输入你的硬性条件，大模型帮你引入时空变量、精准卡死每一分钱</p>
+            </div>
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+            <form id="planForm" onsubmit="submitForm(event)" class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-street-view text-emerald-500 mr-1"></i> 1. 你的出发城市</label>
+                    <input type="text" id="start_city" placeholder="例如：北京、昆明、广州" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                </div>
 
-@app.route('/api/generate_route', methods=['POST'])
-def generate_route():
-    try:
-        data = request.json
-        start_city = data.get('start_city', '').strip()
-        destination = data.get('destination', '').strip()
-        travel_date = data.get('travel_date', '').strip()
-        days = data.get('days', '').strip()
-        budget = data.get('budget', '').strip()
-        tags = data.get('tags', '').strip()
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-map-pin text-orange-500 mr-1"></i> 2. 想去哪里？</label>
+                    <input type="text" id="destination" placeholder="例如：成都、大理、西安" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                </div>
 
-        if not start_city or not destination or not travel_date or not budget:
-            return jsonify({"error": "出发城市、目的地、出发日期和总预算为硬性约束，不能为空！"}), 400
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> 3. 出发日期</label>
+                    <input type="date" id="travel_date" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                </div>
 
-        # 终极防幻觉、控实时性的商业提示词工程
-        system_prompt = f"""你是一位精通省钱通关流、思维极其严谨的顶级特种兵旅游规划师。
-你必须基于用户输入的【具体时间与空间约束】进行极致的预算扣减和路书编排。
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-days text-indigo-500 mr-1"></i> 4. 游玩天数</label>
+                    <select id="days" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
+                        <option value="2">2 天 (周末特种兵)</option>
+                        <option value="3" selected>3 天 (经典深度游)</option>
+                        <option value="5">5 天 (长假充能)</option>
+                    </select>
+                </div>
 
-【用户硬性约束条件】：
-- 🛫 出发城市：{start_city}
-- 🎯 目的地：{destination}
-- 📅 出发具体日期：{travel_date} （请根据此日期判断该目的地属于淡季、旺季、还是节假日，并按当前时间线2026年5月的市场供需预估真实物价！）
-- 💰 硬核总预算：{budget} 元（总花费必须包含往返大交通，绝对不能超支！）
-- ⏱️ 游玩天数：{days} 天
-- 🎭 风格偏好：{tags if tags else "经典打卡，极致性价比"}
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-wallet text-rose-500 mr-1"></i> 5. 硬核总预算 (元)</label>
+                    <input type="number" id="budget" placeholder="最低建议 500 元以上" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                </div>
 
-【核心修正规则（强制执行）】：
-1. 交通双程闭环：在账本里计算大交通花费时，必须同时计算从“{start_city} 到 {destination}”以及“从 {destination} 返回 {start_city}”的【双程】预计票价！
-2. 真实时间轴拒绝瞬移：每个景点、酒店、大交通节点之间，必须留出至少 40-60 分钟的真实城市通勤时间。上午民宿/青旅通常无法办理入住，只能安排寄存行李。
-3. 动态价格降维：由于出发日期是 {travel_date}，如果该日期处于法定节假日或旅游旺季，你必须在住宿预算上提高占比，并明确警告用户该时段物价会上涨，甚至需要削减门票和餐饮预算来强行对齐 {budget} 元的总预算。
-4. 必须留出总预算的 10% 作为“突发事件备用金”。
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-user-group text-purple-500 mr-1"></i> 6. 出游风格偏好</label>
+                    <input type="text" id="tags" placeholder="例如：避开人流、古建筑打卡、狂吃火锅" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
+                </div>
 
-【商业变现规则】：
-必须在【大交通】和【住宿推荐】区域，动态植入以下高亮分销卡片（模拟携程/去哪儿实时比价占位符，用于解决大模型无法直接获取实时变动价格的痛点）：
-<div style="background-color: #fff7ed; border: 1px dashed #f97316; padding: 14px; border-radius: 12px; margin: 12px 0; font-size: 13.5px; text-align: left;">
-    <span style="color: #ea580c; font-weight: bold;">🧡 FlexBudget 动态数据链提示（实时锁定）：</span><br>
-    当前大模型预估基于行业历史均价。由于您的出发时间为 {travel_date}，建议 
-    <a href="https://s.click.taobao.com/mock_travel_affiliate_placeholder" target="_blank" style="color: #0284c7; text-decoration: underline; font-weight: bold;">[点击此处前往 FlexBudget 实时比价沙盒]</a> 
-    一键比对今日全网最新秒杀价、抢扣实时特价房态，若从此处预订可直接锁定专属津贴。
-</div>
+                <div class="md:col-span-2 text-center mt-4">
+                    <button type="submit" id="submitBtn" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3.5 px-16 rounded-full shadow-lg transition transform hover:-translate-y-0.5 inline-flex items-center space-x-2">
+                        <i id="btnIcon" class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span id="btnText">极速生成高性价比路书</span>
+                    </button>
+                </div>
+            </form>
+        </div>
 
-【输出格式要求】：
-请直接输出纯净的 Markdown 格式，包含：
-# 一、FlexBudget 预算大账本总览（核算并证明总花费 <= {budget}元）
-# 二、高性价比大交通与住宿落脚方案（必须包含上述变现卡片）
-# 三、{days}天保姆级特种兵路书（按Day 1, Day 2划分，严格融入偏好并留足真实通勤时间）
-"""
+        <section id="resultSection" class="hidden">
+            <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+                <div class="bg-slate-900 p-6 flex justify-between items-center text-white">
+                    <div class="flex items-center space-x-2 font-bold">
+                        <i class="fa-solid fa-route text-amber-400"></i>
+                        <span>FlexBudget AI 特制时空约束路书</span>
+                    </div>
+                    <span class="text-xs bg-amber-400/20 text-amber-400 px-2 py-1 rounded font-mono">BUDGET LOCKED</span>
+                </div>
+                <div class="p-8 max-w-none text-slate-700 leading-relaxed space-y-4" id="resultContent">
+                    </div>
+            </div>
+        </section>
+    </main>
 
-        response = requests.post(API_URL, json={
-            "model": "deepseek-chat",
-            "messages": [{"role": "user", "content": system_prompt}],
-            "temperature": 0.3  # 进一步压低随机性，确保算账和逻辑高度严谨
-        }, headers={
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
-        }, timeout=60)
+    <script>
+        async function submitForm(event) {
+            event.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
+            const resultSection = document.getElementById('resultSection');
 
-        if response.status_code != 200:
-            return jsonify({"error": f"后端大脑响应异常:
+            btn.disabled = true;
+            btnIcon.className = 'fa-solid fa-spinner fa-spin';
+            btnText.innerText = 'AI 正在精算全网大交通、核对淡旺季物价中...';
+            resultSection.classList.add('hidden');
+
+            try {
+                const response = await fetch('/api/generate_route', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        start_city: document.getElementById('start_city').value,
+                        destination: document.getElementById('destination').value,
+                        travel_date: document.getElementById('travel_date').value,
+                        days: document.getElementById('days').value,
+                        budget: document.getElementById('budget').value,
+                        tags: document.getElementById('tags').value
+                    })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    // 动态转换为精美 HTML 格式
+                    document.getElementById('resultContent').innerHTML = marked.parse(data.result);
+                    resultSection.classList.remove('hidden');
+                    resultSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert('精算失败: ' + data.error);
+                }
+            } catch (e) { alert('网络链路故障: ' + e); }
+
+            btn.disabled = false;
+            btnIcon.className = 'fa-solid fa-wand-magic-sparkles';
+            btnText.innerText = '极速生成高性价比路书';
+        }
+    </script>
+</body>
+</html>
