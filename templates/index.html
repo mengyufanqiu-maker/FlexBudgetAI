@@ -3,80 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlexBudget AI | 智能特种兵旅游规划师</title>
+    <title>FlexBudget AI | 商业级三舱旅游规划师</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* 动态注入的返佣卡片高级样式 */
+        .affiliate-card { background-color: #fff7ed; border: 2px dashed #f97316; padding: 16px; border-radius: 16px; margin: 16px 0; font-size: 14px; text-align: left; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
+        .affiliate-card span { color: #ea580c; font-weight: 800; display: inline-flex; items-center; }
+        .affiliate-card a { color: #0284c7; text-decoration: underline; font-weight: bold; margin-left: 4px; transition: color 0.2s; }
+        .affiliate-card a:hover { color: #0369a1; }
+        
+        /* Markdown 渲染精美微调 */
+        .route-body h1 { font-size: 1.4rem; font-weight: 800; color: #1e293b; margin-top: 1.5rem; margin-bottom: 0.75rem; display: flex; items-center; }
+        .route-body h2 { font-size: 1.2rem; font-weight: 700; color: #0f172a; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+        .route-body h3 { font-size: 1.05rem; font-weight: 700; color: #334155; margin-top: 1rem; }
+        .route-body p { margin-bottom: 0.75rem; line-height: 1.6; text-align: justify; }
+        .route-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .route-body li { margin-bottom: 0.3rem; }
+    </style>
 </head>
-<body class="bg-gradient-to-br from-amber-50 to-orange-50 min-h-screen font-sans text-slate-800">
+<body class="bg-gradient-to-br from-slate-50 via-orange-50/30 to-amber-50/40 min-h-screen font-sans text-slate-800">
 
-    <header class="bg-white/80 backdrop-blur shadow-sm sticky top-0 z-10">
+    <header class="bg-white/70 backdrop-blur shadow-sm sticky top-0 z-10 border-b border-orange-100/50">
         <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-2">
                 <i class="fa-solid fa-compass text-orange-500 text-2xl animate-spin-slow"></i>
-                <h1 class="text-xl font-bold text-slate-800">FlexBudget <span class="text-orange-500">AI</span></h1>
+                <h1 class="text-xl font-black text-slate-800 tracking-tight">FlexBudget <span class="text-orange-500">AI</span></h1>
             </div>
-            <span class="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full font-medium">阶段二：商业变现验证版</span>
+            <span class="text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-full font-bold">OTA 级多舱精算引擎</span>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-4 py-8">
-        <div class="bg-white p-8 rounded-3xl shadow-xl shadow-orange-100/50 border border-orange-100 mb-8">
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="bg-white p-8 rounded-3xl shadow-xl shadow-orange-100/30 border border-slate-100 mb-8">
             <div class="text-center mb-8">
-                <h2 class="text-2xl font-black text-slate-800">定制你的极限预算行程单</h2>
-                <p class="text-slate-500 text-sm mt-1">输入你的硬性条件，大模型帮你精准卡死每一分钱</p>
+                <h2 class="text-2xl font-black text-slate-800 tracking-tight">全网多方案时空智能规划</h2>
+                <p class="text-slate-400 text-sm mt-1">一次生成三套对齐方案，满足不同圈层的特种兵探索欲</p>
             </div>
 
             <form id="planForm" onsubmit="submitForm(event)" class="grid md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-map-pin text-orange-500 mr-1"></i> 想去哪里？</label>
-                    <input type="text" id="destination" placeholder="例如：成都、大理、西安" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-street-view text-emerald-500 mr-1"></i> 出发城市</label>
+                    <input type="text" id="start_city" placeholder="从哪出发？" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
                 </div>
-
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-wallet text-emerald-500 mr-1"></i> 硬核总预算 (元)</label>
-                    <input type="number" id="budget" placeholder="例如：1500, 3000" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-map-pin text-orange-500 mr-1"></i> 目的地</label>
+                    <input type="text" id="destination" placeholder="想去哪里？" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
                 </div>
-
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-days text-blue-500 mr-1"></i> 游玩天数</label>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> 出发具体日期</label>
+                    <input type="date" id="travel_date" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-days text-indigo-500 mr-1"></i> 游玩天数</label>
                     <select id="days" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                         <option value="2">2 天 (周末特种兵)</option>
                         <option value="3" selected>3 天 (经典深度游)</option>
                         <option value="5">5 天 (长假充能)</option>
                     </select>
                 </div>
-
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-user-group text-purple-500 mr-1"></i> 出游风格偏好</label>
-                    <input type="text" id="tags" placeholder="例如：狂吃火锅、避开人流、古建筑打卡" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-wallet text-rose-500 mr-1"></i> 基准总预算 (元)</label>
+                    <input type="number" id="budget" placeholder="以此预算为基准向上下衍生" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-tags text-purple-500 mr-1"></i> 个性化风格偏好</label>
+                    <input type="text" id="tags" placeholder="避开人流、古建筑、狂吃小吃" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                 </div>
 
                 <div class="md:col-span-2 text-center mt-4">
-                    <button type="submit" id="submitBtn" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3.5 px-16 rounded-full shadow-lg shadow-orange-200 transition transform hover:-translate-y-0.5 inline-flex items-center space-x-2">
+                    <button type="submit" id="submitBtn" class="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3.5 px-16 rounded-full shadow-lg shadow-orange-200/50 transition transform hover:-translate-y-0.5 inline-flex items-center space-x-2">
                         <i id="btnIcon" class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span id="btnText">极速生成高性价比路书</span>
+                        <span id="btnText">极速精算三大档位路书</span>
                     </button>
                 </div>
             </form>
         </div>
 
-        <section id="resultSection" class="hidden">
+        <section id="resultSection" class="hidden space-y-4">
+            <div class="flex space-x-2 bg-slate-200/60 p-1.5 rounded-2xl w-full border border-slate-200">
+                <button onclick="switchTab('match')" id="tab-match" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 bg-white text-orange-600 shadow-sm">
+                    <i class="fa-solid fa-bullseye"></i> <span>🎯 核心定制版 (最优先)</span>
+                </button>
+                <button onclick="switchTab('saving')" id="tab-saving" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 text-slate-500 hover:text-slate-700">
+                    <i class="fa-solid fa-scale-balanced"></i> <span>🪙 极限节省版</span>
+                </button>
+                <button onclick="switchTab('luxury')" id="tab-luxury" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 text-slate-500 hover:text-slate-700">
+                    <i class="fa-solid fa-crown"></i> <span>👑 尊享豪华版</span>
+                </button>
+            </div>
+
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
-                <div class="bg-slate-900 p-6 flex justify-between items-center text-white">
-                    <div class="flex items-center space-x-2 font-bold">
-                        <i class="fa-solid fa-route text-amber-400"></i>
-                        <span>FlexBudget AI 特制专属路书</span>
-                    </div>
-                    <span class="text-xs bg-amber-400/20 text-amber-400 px-2 py-1 rounded font-mono">BUDGET LOCKED</span>
-                </div>
-                <div class="p-8 prose max-w-none" id="resultContent">
+                <div class="p-8 route-body" id="tabContentDisplay">
                     </div>
             </div>
         </section>
     </main>
 
     <script>
+        // 全局存储大模型吐出的三份切片数据
+        let planData = { match: '', saving: '', luxury: '' };
+
         async function submitForm(event) {
             event.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -86,7 +114,7 @@
 
             btn.disabled = true;
             btnIcon.className = 'fa-solid fa-spinner fa-spin';
-            btnText.innerText = 'AI 正在精算全网机票酒店、极限锁价中...';
+            btnText.innerText = '正在同时精算极省、匹配、高奢三套大账本...';
             resultSection.classList.add('hidden');
 
             try {
@@ -94,25 +122,53 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        start_city: document.getElementById('start_city').value,
                         destination: document.getElementById('destination').value,
-                        budget: document.getElementById('budget').value,
+                        travel_date: document.getElementById('travel_date').value,
                         days: document.getElementById('days').value,
+                        budget: document.getElementById('budget').value,
                         tags: document.getElementById('tags').value
                     })
                 });
+                
                 const data = await response.json();
                 if (response.ok) {
-                    document.getElementById('resultContent').innerHTML = marked.parse(data.result);
+                    const rawResult = data.result;
+                    
+                    # 利用特定暗号切开三套路书
+                    planData.match = rawResult.split('---PLAN_SAVING---')[0].replace('---PLAN_MATCH---', '');
+                    const remainder = rawResult.split('---PLAN_SAVING---')[1];
+                    planData.saving = remainder.split('---PLAN_LUXURY---')[0];
+                    planData.luxury = remainder.split('---PLAN_LUXURY---')[1];
+
+                    // 核心关键点：最优先、默认展示匹配版方案！
+                    switchTab('match');
                     resultSection.classList.remove('hidden');
                     resultSection.scrollIntoView({ behavior: 'smooth' });
                 } else {
                     alert('精算失败: ' + data.error);
                 }
-            } catch (e) { alert('网络链路故障: ' + e); }
+            } catch (e) { alert('链路异常: ' + e); }
 
             btn.disabled = false;
             btnIcon.className = 'fa-solid fa-wand-magic-sparkles';
-            btnText.innerText = '极速生成高性价比路书';
+            btnText.innerText = '极速精算三大档位路书';
+        }
+
+        // 标签页动态切换魔法
+        function switchTab(type) {
+            const tabs = ['match', 'saving', 'luxury'];
+            tabs.forEach(t => {
+                const tabBtn = document.getElementById('tab-' + t);
+                if(t === type) {
+                    tabBtn.className = "flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 bg-white text-orange-600 shadow-sm";
+                } else {
+                    tabBtn.className = "flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 text-slate-500 hover:text-slate-700";
+                }
+            });
+
+            // 将对应的 Markdown 实时解析并灌入显示区
+            document.getElementById('tabContentDisplay').innerHTML = marked.parse(planData[type] || '暂无数据');
         }
     </script>
 </body>
