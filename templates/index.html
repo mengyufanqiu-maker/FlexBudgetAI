@@ -20,14 +20,18 @@
         .route-body p { margin-bottom: 0.75rem; line-height: 1.6; }
         .route-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
         .route-body li { margin-bottom: 0.3rem; }
+        
+        /* 隐藏单选框的默认样式 */
+        .mode-radio:checked + div { background-color: #f97316; color: white; border-color: #f97316; }
+        .mode-radio:not(:checked) + div { background-color: white; color: #64748b; border-color: #e2e8f0; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-orange-50/30 to-amber-50/40 min-h-screen font-sans text-slate-800">
 
     <div id="loading-overlay">
         <div class="loader mb-6"></div>
-        <p class="text-xl font-bold tracking-widest animate-pulse">精算大脑正在实时抓取航线与酒店数据...</p>
-        <p class="text-slate-400 text-sm mt-2">正在核对去程与返程双向动态报价</p>
+        <p class="text-xl font-bold tracking-widest animate-pulse">精算大脑正在实时抓取数据...</p>
+        <p id="loading-subtext" class="text-slate-400 text-sm mt-2">正在核对动态报价方案</p>
     </div>
 
     <header class="bg-white/70 backdrop-blur shadow-sm sticky top-0 z-10 border-b border-orange-100/50">
@@ -36,15 +40,28 @@
                 <i class="fa-solid fa-compass text-orange-500 text-2xl"></i>
                 <h1 class="text-xl font-black text-slate-800 tracking-tight">FlexBudget <span class="text-orange-500">AI</span></h1>
             </div>
-            <span class="text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-full font-bold">OTA 级多舱精算引擎</span>
+            <span class="text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-full font-bold">V4.0 双模精算引擎</span>
         </div>
     </header>
 
     <main class="max-w-4xl mx-auto px-4 py-8">
         <div class="bg-white p-8 rounded-3xl shadow-xl shadow-orange-100/30 border border-slate-100 mb-8">
-            <div class="text-center mb-8">
-                <h2 class="text-2xl font-black text-slate-800">全网多方案时空智能规划</h2>
-                <p class="text-slate-400 text-sm mt-1">一次生成三套对齐方案，满足不同圈层的特种兵探索欲</p>
+            
+            <div class="flex justify-center mb-8">
+                <div class="inline-flex bg-slate-100 rounded-full p-1 border border-slate-200">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="time_mode" value="exact" class="hidden mode-radio" checked onchange="toggleTimeMode()">
+                        <div class="px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center space-x-2">
+                            <i class="fa-solid fa-plane-lock"></i><span>精确日期 (查票价)</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="time_mode" value="rough" class="hidden mode-radio" onchange="toggleTimeMode()">
+                        <div class="px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center space-x-2">
+                            <i class="fa-solid fa-calendar-week"></i><span>灵活时间 (估均价)</span>
+                        </div>
+                    </label>
+                </div>
             </div>
 
             <form id="planForm" onsubmit="submitForm(event)" class="grid md:grid-cols-2 gap-6">
@@ -56,14 +73,30 @@
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-map-pin text-orange-500 mr-1"></i> 目的地</label>
                     <input type="text" id="destination" placeholder="例如：大理" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
                 </div>
-                <div>
+
+                <div id="mode_exact_1" class="mode-exact-group">
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> 去程日期</label>
-                    <input type="date" id="travel_date" onchange="updateReturnDateMin()" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                    <input type="date" id="travel_date" onchange="updateReturnDateMin()" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                 </div>
-                <div>
+                <div id="mode_exact_2" class="mode-exact-group">
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-check text-indigo-500 mr-1"></i> 返程日期</label>
-                    <input type="date" id="return_date" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                    <input type="date" id="return_date" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                 </div>
+
+                <div id="mode_rough_1" class="mode-rough-group hidden">
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-leaf text-green-500 mr-1"></i> 大致出行时间</label>
+                    <input type="text" id="approx_time" placeholder="例如：5月中旬 / 暑假 / 近期" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
+                </div>
+                <div id="mode_rough_2" class="mode-rough-group hidden">
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-clock text-indigo-500 mr-1"></i> 预计游玩天数</label>
+                    <select id="days" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
+                        <option value="2">2 天 (周末短途)</option>
+                        <option value="3" selected>3 天 (经典深度游)</option>
+                        <option value="5">5 天 (小长假长游)</option>
+                        <option value="7">7 天 (深度度假)</option>
+                    </select>
+                </div>
+
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-wallet text-rose-500 mr-1"></i> 基准总预算 (元)</label>
                     <input type="number" id="budget" placeholder="以此预算为中轴展开比价" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
@@ -104,6 +137,22 @@
     <script>
         let planData = { match: '', saving: '', luxury: '' };
 
+        // 切换 精确/灵活 模式
+        function toggleTimeMode() {
+            const mode = document.querySelector('input[name="time_mode"]:checked').value;
+            if (mode === 'exact') {
+                document.getElementById('mode_exact_1').classList.remove('hidden');
+                document.getElementById('mode_exact_2').classList.remove('hidden');
+                document.getElementById('mode_rough_1').classList.add('hidden');
+                document.getElementById('mode_rough_2').classList.add('hidden');
+            } else {
+                document.getElementById('mode_exact_1').classList.add('hidden');
+                document.getElementById('mode_exact_2').classList.add('hidden');
+                document.getElementById('mode_rough_1').classList.remove('hidden');
+                document.getElementById('mode_rough_2').classList.remove('hidden');
+            }
+        }
+
         // 控制返程日期不能小于去程日期
         function updateReturnDateMin() {
             const travelDate = document.getElementById('travel_date').value;
@@ -114,8 +163,18 @@
             event.preventDefault();
             const loader = document.getElementById('loading-overlay');
             const resultSection = document.getElementById('resultSection');
+            const mode = document.querySelector('input[name="time_mode"]:checked').value;
 
-            loader.style.display = 'flex'; // 启动奢华加载动画
+            // 模式校验
+            if (mode === 'exact' && (!document.getElementById('travel_date').value || !document.getElementById('return_date').value)) {
+                alert("请填写准确的去程和返程日期！"); return;
+            }
+            if (mode === 'rough' && (!document.getElementById('approx_time').value)) {
+                alert("请填写大致出行时间（如：下个月）！"); return;
+            }
+
+            loader.style.display = 'flex';
+            document.getElementById('loading-subtext').innerText = mode === 'exact' ? "正在死磕具体航班与酒店锁房报价" : "正在拉取该季节的均价数据";
             resultSection.classList.add('hidden');
 
             try {
@@ -123,10 +182,13 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        time_mode: mode,
                         start_city: document.getElementById('start_city').value,
                         destination: document.getElementById('destination').value,
                         travel_date: document.getElementById('travel_date').value,
                         return_date: document.getElementById('return_date').value,
+                        approx_time: document.getElementById('approx_time').value,
+                        days: document.getElementById('days').value,
                         budget: document.getElementById('budget').value,
                         tags: document.getElementById('tags').value
                     })
@@ -141,12 +203,12 @@
                         
                         if (splitSaving.length > 1) {
                             const splitLuxury = splitSaving[1].split(/---PLAN_LUXURY---/i);
-                            planData.saving = splitLuxury[0] || "AI生成结构有偏差，请重试";
-                            planData.luxury = splitLuxury[1] || "AI生成结构有偏差，请重试";
+                            planData.saving = splitLuxury[0] || "AI生成偏差";
+                            planData.luxury = splitLuxury[1] || "AI生成偏差";
                         } else {
                             planData.match = rawResult;
-                            planData.saving = "模型未正确分割方案，内容已展示在【定制版】中。";
-                            planData.luxury = "模型未正确分割方案，内容已展示在【定制版】中。";
+                            planData.saving = "模型未分块展示。";
+                            planData.luxury = "模型未分块展示。";
                         }
                     } catch (parseError) {
                         planData.match = rawResult;
@@ -162,7 +224,7 @@
                 alert('网络或接口异常: ' + e); 
             }
 
-            loader.style.display = 'none'; // 关闭加载动画
+            loader.style.display = 'none';
         }
 
         function switchTab(type) {
