@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        #loading-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; color: #38bdf8; }
+        .loader { width: 80px; height: 80px; border: 8px solid #1e293b; border-top: 8px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .affiliate-card { background-color: #fff7ed; border: 2px dashed #f97316; padding: 16px; border-radius: 16px; margin: 16px 0; font-size: 14px; text-align: left; }
         .affiliate-card span { color: #ea580c; font-weight: 800; }
         .affiliate-card a { color: #0284c7; text-decoration: underline; font-weight: bold; margin-left: 4px; }
@@ -20,6 +23,12 @@
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-orange-50/30 to-amber-50/40 min-h-screen font-sans text-slate-800">
+
+    <div id="loading-overlay">
+        <div class="loader mb-6"></div>
+        <p class="text-xl font-bold tracking-widest animate-pulse">精算大脑正在实时抓取航线与酒店数据...</p>
+        <p class="text-slate-400 text-sm mt-2">正在核对去程与返程双向动态报价</p>
+    </div>
 
     <header class="bg-white/70 backdrop-blur shadow-sm sticky top-0 z-10 border-b border-orange-100/50">
         <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -48,16 +57,12 @@
                     <input type="text" id="destination" placeholder="例如：大理" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> 出发日期</label>
-                    <input type="date" id="travel_date" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> 去程日期</label>
+                    <input type="date" id="travel_date" onchange="updateReturnDateMin()" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-days text-indigo-500 mr-1"></i> 游玩天数</label>
-                    <select id="days" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
-                        <option value="2">2 天 (周末短途)</option>
-                        <option value="3" selected>3 天 (经典深度游)</option>
-                        <option value="5">5 天 (小长假长游)</option>
-                    </select>
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-check text-indigo-500 mr-1"></i> 返程日期</label>
+                    <input type="date" id="return_date" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-wallet text-rose-500 mr-1"></i> 基准总预算 (元)</label>
@@ -99,16 +104,18 @@
     <script>
         let planData = { match: '', saving: '', luxury: '' };
 
+        // 控制返程日期不能小于去程日期
+        function updateReturnDateMin() {
+            const travelDate = document.getElementById('travel_date').value;
+            document.getElementById('return_date').min = travelDate;
+        }
+
         async function submitForm(event) {
             event.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const btnText = document.getElementById('btnText');
-            const btnIcon = document.getElementById('btnIcon');
+            const loader = document.getElementById('loading-overlay');
             const resultSection = document.getElementById('resultSection');
 
-            btn.disabled = true;
-            btnIcon.className = 'fa-solid fa-spinner fa-spin';
-            btnText.innerText = '正在调动大模型高精度精算...';
+            loader.style.display = 'flex'; // 启动奢华加载动画
             resultSection.classList.add('hidden');
 
             try {
@@ -119,7 +126,7 @@
                         start_city: document.getElementById('start_city').value,
                         destination: document.getElementById('destination').value,
                         travel_date: document.getElementById('travel_date').value,
-                        days: document.getElementById('days').value,
+                        return_date: document.getElementById('return_date').value,
                         budget: document.getElementById('budget').value,
                         tags: document.getElementById('tags').value
                     })
@@ -128,8 +135,6 @@
                 const data = await response.json();
                 if (response.ok) {
                     const rawResult = data.result || "";
-                    
-                    // 🛡️ 终极防爆解析逻辑：用正则兼容大模型加空格的乱写行为
                     try {
                         const splitSaving = rawResult.split(/---PLAN_SAVING---/i);
                         planData.match = (splitSaving[0] || "").replace(/---PLAN_MATCH---/i, '');
@@ -139,13 +144,11 @@
                             planData.saving = splitLuxury[0] || "AI生成结构有偏差，请重试";
                             planData.luxury = splitLuxury[1] || "AI生成结构有偏差，请重试";
                         } else {
-                            // 如果 AI 完全忘记写分割线，直接把所有内容塞进第一页，防止崩溃
                             planData.match = rawResult;
-                            planData.saving = "模型未正确分割方案，所有内容已展示在【定制版】中。";
-                            planData.luxury = "模型未正确分割方案，所有内容已展示在【定制版】中。";
+                            planData.saving = "模型未正确分割方案，内容已展示在【定制版】中。";
+                            planData.luxury = "模型未正确分割方案，内容已展示在【定制版】中。";
                         }
                     } catch (parseError) {
-                        console.error("解析错误", parseError);
                         planData.match = rawResult;
                     }
 
@@ -159,9 +162,7 @@
                 alert('网络或接口异常: ' + e); 
             }
 
-            btn.disabled = false;
-            btnIcon.className = 'fa-solid fa-wand-magic-sparkles';
-            btnText.innerText = '极速精算三大档位路书';
+            loader.style.display = 'none'; // 关闭加载动画
         }
 
         function switchTab(type) {
