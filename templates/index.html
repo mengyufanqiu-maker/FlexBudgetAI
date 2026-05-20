@@ -8,9 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        #loading-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; color: #38bdf8; }
-        .loader { width: 80px; height: 80px; border: 8px solid #1e293b; border-top: 8px solid #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .affiliate-card { background-color: #fff7ed; border: 2px dashed #f97316; padding: 16px; border-radius: 16px; margin: 16px 0; font-size: 14px; text-align: left; }
         .affiliate-card span { color: #ea580c; font-weight: 800; }
         .affiliate-card a { color: #0284c7; text-decoration: underline; font-weight: bold; margin-left: 4px; }
@@ -20,19 +17,13 @@
         .route-body p { margin-bottom: 0.75rem; line-height: 1.6; }
         .route-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
         .route-body li { margin-bottom: 0.3rem; }
-        
-        /* 隐藏单选框的默认样式 */
         .mode-radio:checked + div { background-color: #f97316; color: white; border-color: #f97316; }
         .mode-radio:not(:checked) + div { background-color: white; color: #64748b; border-color: #e2e8f0; }
+        .cursor-blink { animation: blink 1s step-end infinite; color: #f97316; font-weight: 900; }
+        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-orange-50/30 to-amber-50/40 min-h-screen font-sans text-slate-800">
-
-    <div id="loading-overlay">
-        <div class="loader mb-6"></div>
-        <p class="text-xl font-bold tracking-widest animate-pulse">精算大脑正在实时抓取数据...</p>
-        <p id="loading-subtext" class="text-slate-400 text-sm mt-2">正在核对动态报价方案</p>
-    </div>
 
     <header class="bg-white/70 backdrop-blur shadow-sm sticky top-0 z-10 border-b border-orange-100/50">
         <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -40,7 +31,7 @@
                 <i class="fa-solid fa-compass text-orange-500 text-2xl"></i>
                 <h1 class="text-xl font-black text-slate-800 tracking-tight">FlexBudget <span class="text-orange-500">AI</span></h1>
             </div>
-            <span class="text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-full font-bold">V4.0 双模精算引擎</span>
+            <span class="text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-full font-bold">V5.0 穿透级流式引擎</span>
         </div>
     </header>
 
@@ -85,25 +76,24 @@
 
                 <div id="mode_rough_1" class="mode-rough-group hidden">
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-leaf text-green-500 mr-1"></i> 大致出行时间</label>
-                    <input type="text" id="approx_time" placeholder="例如：5月中旬 / 暑假 / 近期" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
+                    <input type="text" id="approx_time" placeholder="例如：近期" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                 </div>
                 <div id="mode_rough_2" class="mode-rough-group hidden">
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-clock text-indigo-500 mr-1"></i> 预计游玩天数</label>
                     <select id="days" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
-                        <option value="2">2 天 (周末短途)</option>
-                        <option value="3" selected>3 天 (经典深度游)</option>
-                        <option value="5">5 天 (小长假长游)</option>
-                        <option value="7">7 天 (深度度假)</option>
+                        <option value="2">2 天</option>
+                        <option value="3" selected>3 天</option>
+                        <option value="5">5 天</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-wallet text-rose-500 mr-1"></i> 基准总预算 (元)</label>
-                    <input type="number" id="budget" placeholder="以此预算为中轴展开比价" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                    <input type="number" id="budget" placeholder="以此预算为中轴" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-tags text-purple-500 mr-1"></i> 个性化风格偏好</label>
-                    <input type="text" id="tags" placeholder="避开人群、狂吃小吃、深度拍照" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-tags text-purple-500 mr-1"></i> 个性化偏好</label>
+                    <input type="text" id="tags" placeholder="避开人群" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                 </div>
 
                 <div class="md:col-span-2 text-center mt-4">
@@ -116,7 +106,7 @@
         </div>
 
         <section id="resultSection" class="hidden space-y-4">
-            <div class="flex space-x-2 bg-slate-200/60 p-1.5 rounded-2xl w-full border border-slate-200">
+            <div id="tabMenu" class="flex space-x-2 bg-slate-200/60 p-1.5 rounded-2xl w-full border border-slate-200 transition-opacity duration-500">
                 <button onclick="switchTab('match')" id="tab-match" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 bg-white text-orange-600 shadow-sm">
                     <i class="fa-solid fa-bullseye"></i> <span>🎯 核心定制版</span>
                 </button>
@@ -128,7 +118,7 @@
                 </button>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+            <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden min-h-[300px]">
                 <div class="p-8 route-body" id="tabContentDisplay"></div>
             </div>
         </section>
@@ -136,8 +126,8 @@
 
     <script>
         let planData = { match: '', saving: '', luxury: '' };
+        let fullText = ""; 
 
-        // 切换 精确/灵活 模式
         function toggleTimeMode() {
             const mode = document.querySelector('input[name="time_mode"]:checked').value;
             if (mode === 'exact') {
@@ -153,7 +143,6 @@
             }
         }
 
-        // 控制返程日期不能小于去程日期
         function updateReturnDateMin() {
             const travelDate = document.getElementById('travel_date').value;
             document.getElementById('return_date').min = travelDate;
@@ -161,8 +150,13 @@
 
         async function submitForm(event) {
             event.preventDefault();
-            const loader = document.getElementById('loading-overlay');
+            const btn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
             const resultSection = document.getElementById('resultSection');
+            const tabMenu = document.getElementById('tabMenu');
+            const display = document.getElementById('tabContentDisplay');
+            
             const mode = document.querySelector('input[name="time_mode"]:checked').value;
 
             // 模式校验
@@ -170,12 +164,19 @@
                 alert("请填写准确的去程和返程日期！"); return;
             }
             if (mode === 'rough' && (!document.getElementById('approx_time').value)) {
-                alert("请填写大致出行时间（如：下个月）！"); return;
+                alert("请填写大致出行时间！"); return;
             }
 
-            loader.style.display = 'flex';
-            document.getElementById('loading-subtext').innerText = mode === 'exact' ? "正在死磕具体航班与酒店锁房报价" : "正在拉取该季节的均价数据";
-            resultSection.classList.add('hidden');
+            // UI 初始化：隐藏 Tab，显示实时的打字机面板
+            btn.disabled = true;
+            btnIcon.className = 'fa-solid fa-spinner fa-spin';
+            btnText.innerText = '正在流式传输脑力算力...';
+            fullText = "";
+            
+            tabMenu.classList.add('opacity-30', 'pointer-events-none'); // 禁用并变灰 Tab
+            resultSection.classList.remove('hidden');
+            display.innerHTML = '<span class="text-orange-500 font-bold"><i class="fa-solid fa-satellite-dish mr-2 animate-pulse"></i> 神经通道已打通，防拦截流式传输中...</span><br><br><span class="cursor-blink">█</span>';
+            resultSection.scrollIntoView({ behavior: 'smooth' });
 
             try {
                 const response = await fetch('/api/generate_route', {
@@ -193,38 +194,68 @@
                         tags: document.getElementById('tags').value
                     })
                 });
-                
-                const data = await response.json();
-                if (response.ok) {
-                    const rawResult = data.result || "";
-                    try {
-                        const splitSaving = rawResult.split(/---PLAN_SAVING---/i);
-                        planData.match = (splitSaving[0] || "").replace(/---PLAN_MATCH---/i, '');
-                        
-                        if (splitSaving.length > 1) {
-                            const splitLuxury = splitSaving[1].split(/---PLAN_LUXURY---/i);
-                            planData.saving = splitLuxury[0] || "AI生成偏差";
-                            planData.luxury = splitLuxury[1] || "AI生成偏差";
-                        } else {
-                            planData.match = rawResult;
-                            planData.saving = "模型未分块展示。";
-                            planData.luxury = "模型未分块展示。";
-                        }
-                    } catch (parseError) {
-                        planData.match = rawResult;
-                    }
 
-                    switchTab('match');
-                    resultSection.classList.remove('hidden');
-                    resultSection.scrollIntoView({ behavior: 'smooth' });
-                } else {
-                    alert('精算错误: ' + (data.error || '未知错误'));
+                // 🚀 核心：解析浏览器的数据流 (Streaming)
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    buffer += decoder.decode(value, { stream: true });
+                    let lines = buffer.split('\n');
+                    buffer = lines.pop(); // 保存不完整的最后一行
+                    
+                    for (let line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const dataStr = line.slice(6);
+                            try {
+                                const parsed = JSON.parse(dataStr);
+                                if (parsed.error) {
+                                    display.innerHTML = `<span class="text-red-500">❌ ${parsed.error}</span>`;
+                                    throw new Error(parsed.error);
+                                }
+                                if (parsed.text) {
+                                    fullText += parsed.text;
+                                    // 实时打字机渲染
+                                    display.innerHTML = marked.parse(fullText) + '<span class="cursor-blink">█</span>';
+                                }
+                            } catch (e) {}
+                        }
+                    }
                 }
-            } catch (e) { 
-                alert('网络或接口异常: ' + e); 
+
+                // 流传输彻底结束，执行切割，并在瞬间完成魔术排版！
+                try {
+                    const splitSaving = fullText.split(/---PLAN_SAVING---/i);
+                    planData.match = (splitSaving[0] || "").replace(/---PLAN_MATCH---/i, '');
+                    
+                    if (splitSaving.length > 1) {
+                        const splitLuxury = splitSaving[1].split(/---PLAN_LUXURY---/i);
+                        planData.saving = splitLuxury[0] || "格式稍有偏差";
+                        planData.luxury = splitLuxury[1] || "格式稍有偏差";
+                    } else {
+                        planData.match = fullText;
+                        planData.saving = "AI未正确分隔，全挤在第一页了。";
+                        planData.luxury = "AI未正确分隔，全挤在第一页了。";
+                    }
+                } catch (parseError) {
+                    planData.match = fullText;
+                }
+
+                // 恢复 Tab 功能并激活第一个 Tab
+                tabMenu.classList.remove('opacity-30', 'pointer-events-none');
+                switchTab('match');
+
+            } catch (e) {
+                if(!fullText) display.innerHTML = `<span class="text-red-500 font-bold">连接超时或被阻断。请检查网络。</span>`;
             }
 
-            loader.style.display = 'none';
+            btn.disabled = false;
+            btnIcon.className = 'fa-solid fa-wand-magic-sparkles';
+            btnText.innerText = '极速精算三大档位路书';
         }
 
         function switchTab(type) {
