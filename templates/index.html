@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        /* 淘系与携程联盟商业广告卡片样式 */
         .affiliate-card { background-color: #fff7ed; border: 2px dashed #f97316; padding: 16px; border-radius: 16px; margin: 16px 0; font-size: 14px; text-align: left; }
         .affiliate-card span { color: #ea580c; font-weight: 800; }
         .affiliate-card a { color: #0284c7; text-decoration: underline; font-weight: bold; margin-left: 4px; }
@@ -17,8 +18,12 @@
         .route-body p { margin-bottom: 0.75rem; line-height: 1.6; }
         .route-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
         .route-body li { margin-bottom: 0.3rem; }
+        
+        /* 现代胶囊开关点击动效 */
         .mode-radio:checked + div { background-color: #f97316; color: white; border-color: #f97316; }
         .mode-radio:not(:checked) + div { background-color: white; color: #64748b; border-color: #e2e8f0; }
+        
+        /* 炫酷极客光标闪烁 */
         .cursor-blink { animation: blink 1s step-end infinite; color: #f97316; font-weight: 900; }
         @keyframes blink { 50% { opacity: 0; } }
     </style>
@@ -31,7 +36,7 @@
                 <i class="fa-solid fa-compass text-orange-500 text-2xl"></i>
                 <h1 class="text-xl font-black text-slate-800 tracking-tight">FlexBudget <span class="text-orange-500">AI</span></h1>
             </div>
-            <span class="text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-full font-bold">V5.0 穿透级流式引擎</span>
+            <span class="text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-full font-bold">V5.1 穿透级流式引擎</span>
         </div>
     </header>
 
@@ -76,37 +81,37 @@
 
                 <div id="mode_rough_1" class="mode-rough-group hidden">
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-leaf text-green-500 mr-1"></i> 大致出行时间</label>
-                    <input type="text" id="approx_time" placeholder="例如：近期" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
+                    <input type="text" id="approx_time" placeholder="例如：国庆节 / 5月中旬 / 暑假" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                 </div>
                 <div id="mode_rough_2" class="mode-rough-group hidden">
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-clock text-indigo-500 mr-1"></i> 预计游玩天数</label>
                     <select id="days" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
-                        <option value="2">2 天</option>
-                        <option value="3" selected>3 天</option>
-                        <option value="5">5 天</option>
+                        <option value="2">2 天 (周末短途)</option>
+                        <option value="3" selected>3 天 (经典游玩)</option>
+                        <option value="5">5 天 (长途度假)</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-wallet text-rose-500 mr-1"></i> 基准总预算 (元)</label>
-                    <input type="number" id="budget" placeholder="以此预算为中轴" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
+                    <input type="number" id="budget" placeholder="以此预算为中轴线比价" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-tags text-purple-500 mr-1"></i> 个性化偏好</label>
-                    <input type="text" id="tags" placeholder="避开人群" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
+                    <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-tags text-purple-500 mr-1"></i> 个性化偏好风格</label>
+                    <input type="text" id="tags" placeholder="避开人群、狂吃特色小吃、不爬高山" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                 </div>
 
                 <div class="md:col-span-2 text-center mt-4">
                     <button type="submit" id="submitBtn" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold py-3.5 px-16 rounded-full shadow-lg shadow-orange-200/50 transition transform hover:-translate-y-0.5 inline-flex items-center space-x-2">
                         <i id="btnIcon" class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span id="btnText">极速精算三大档位路书</span>
+                        <span id="btnText">极速流式精算三大档位路书</span>
                     </button>
                 </div>
             </form>
         </div>
 
         <section id="resultSection" class="hidden space-y-4">
-            <div id="tabMenu" class="flex space-x-2 bg-slate-200/60 p-1.5 rounded-2xl w-full border border-slate-200 transition-opacity duration-500">
+            <div id="tabMenu" class="flex space-x-2 bg-slate-200/60 p-1.5 rounded-2xl w-full border border-slate-200 transition-all duration-500">
                 <button onclick="switchTab('match')" id="tab-match" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 bg-white text-orange-600 shadow-sm">
                     <i class="fa-solid fa-bullseye"></i> <span>🎯 核心定制版</span>
                 </button>
@@ -118,7 +123,7 @@
                 </button>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden min-h-[300px]">
+            <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden min-h-[350px]">
                 <div class="p-8 route-body" id="tabContentDisplay"></div>
             </div>
         </section>
@@ -159,23 +164,22 @@
             
             const mode = document.querySelector('input[name="time_mode"]:checked').value;
 
-            // 模式校验
             if (mode === 'exact' && (!document.getElementById('travel_date').value || !document.getElementById('return_date').value)) {
-                alert("请填写准确的去程和返程日期！"); return;
+                alert("精确日期模式下，请选择去程和返程日期！"); return;
             }
             if (mode === 'rough' && (!document.getElementById('approx_time').value)) {
-                alert("请填写大致出行时间！"); return;
+                alert("灵活时间模式下，请填写大致出行时间段（如：暑假）！"); return;
             }
 
-            // UI 初始化：隐藏 Tab，显示实时的打字机面板
+            // 界面重置：冻结 Tab，开启全屏打字模式
             btn.disabled = true;
             btnIcon.className = 'fa-solid fa-spinner fa-spin';
-            btnText.innerText = '正在流式传输脑力算力...';
+            btnText.innerText = '正在流式接收云端精算数据...';
             fullText = "";
             
-            tabMenu.classList.add('opacity-30', 'pointer-events-none'); // 禁用并变灰 Tab
+            tabMenu.classList.add('opacity-25', 'pointer-events-none'); 
             resultSection.classList.remove('hidden');
-            display.innerHTML = '<span class="text-orange-500 font-bold"><i class="fa-solid fa-satellite-dish mr-2 animate-pulse"></i> 神经通道已打通，防拦截流式传输中...</span><br><br><span class="cursor-blink">█</span>';
+            display.innerHTML = '<span class="text-orange-500 font-bold animate-pulse"><i class="fa-solid fa-satellite-dish mr-2"></i> 防拦截流式信道已建立，AI 正在一行行打印方案...</span><br><br><span class="cursor-blink">█</span>';
             resultSection.scrollIntoView({ behavior: 'smooth' });
 
             try {
@@ -195,7 +199,15 @@
                     })
                 });
 
-                // 🚀 核心：解析浏览器的数据流 (Streaming)
+                // 🛡️ iOS/Safari 专属防爆雷达：如果国内防火墙掐断并返回了 502 HTML 错误页面，直接拦截提示
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json") && !contentType.includes("event-stream")) {
+                    alert("⚠️ 云端服务器正在重启加载，请静候 30 秒后再次点击生成！");
+                    btn.disabled = false; btnIcon.className = 'fa-solid fa-wand-magic-sparkles'; btnText.innerText = '极速流式精算三大档位路书';
+                    return;
+                }
+
+                // 🚀 核心：解析底层 SSE 字符流
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder('utf-8');
                 let buffer = '';
@@ -206,7 +218,7 @@
                     
                     buffer += decoder.decode(value, { stream: true });
                     let lines = buffer.split('\n');
-                    buffer = lines.pop(); // 保存不完整的最后一行
+                    buffer = lines.pop(); 
                     
                     for (let line of lines) {
                         if (line.startsWith('data: ')) {
@@ -214,12 +226,12 @@
                             try {
                                 const parsed = JSON.parse(dataStr);
                                 if (parsed.error) {
-                                    display.innerHTML = `<span class="text-red-500">❌ ${parsed.error}</span>`;
+                                    display.innerHTML = `<span class="text-red-500 font-bold">❌ 错误: ${parsed.error}</span>`;
                                     throw new Error(parsed.error);
                                 }
                                 if (parsed.text) {
                                     fullText += parsed.text;
-                                    // 实时打字机渲染
+                                    // 实时滚动渲染打字效果
                                     display.innerHTML = marked.parse(fullText) + '<span class="cursor-blink">█</span>';
                                 }
                             } catch (e) {}
@@ -227,35 +239,35 @@
                     }
                 }
 
-                // 流传输彻底结束，执行切割，并在瞬间完成魔术排版！
+                // 🪄 打字彻底结束，瞬间执行无缝三卡片切割
                 try {
                     const splitSaving = fullText.split(/---PLAN_SAVING---/i);
                     planData.match = (splitSaving[0] || "").replace(/---PLAN_MATCH---/i, '');
                     
                     if (splitSaving.length > 1) {
                         const splitLuxury = splitSaving[1].split(/---PLAN_LUXURY---/i);
-                        planData.saving = splitLuxury[0] || "格式稍有偏差";
-                        planData.luxury = splitLuxury[1] || "格式稍有偏差";
+                        planData.saving = splitLuxury[0] || "方案结构生成偏差";
+                        planData.luxury = splitLuxury[1] || "方案结构生成偏差";
                     } else {
                         planData.match = fullText;
-                        planData.saving = "AI未正确分隔，全挤在第一页了。";
-                        planData.luxury = "AI未正确分隔，全挤在第一页了。";
+                        planData.saving = "AI未正确放入独立卡片，请在【定制版】中直接下拉浏览全文。";
+                        planData.luxury = "AI未正确放入独立卡片，请在【定制版】中直接下拉浏览全文。";
                     }
                 } catch (parseError) {
                     planData.match = fullText;
                 }
 
-                // 恢复 Tab 功能并激活第一个 Tab
-                tabMenu.classList.remove('opacity-30', 'pointer-events-none');
+                // 解冻 Tab，把用户带入精美对齐的第一个定制面板
+                tabMenu.classList.remove('opacity-25', 'pointer-events-none');
                 switchTab('match');
 
             } catch (e) {
-                if(!fullText) display.innerHTML = `<span class="text-red-500 font-bold">连接超时或被阻断。请检查网络。</span>`;
+                if(!fullText) display.innerHTML = `<span class="text-red-500 font-bold">❌ 链路中断，请检查网络环境或确认 Render 的 API Key 是否有效。</span>`;
             }
 
             btn.disabled = false;
             btnIcon.className = 'fa-solid fa-wand-magic-sparkles';
-            btnText.innerText = '极速精算三大档位路书';
+            btnText.innerText = '极速流式精算三大档位路书';
         }
 
         function switchTab(type) {
