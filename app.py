@@ -1,6 +1,7 @@
 import os
 import requests
-from flask import Flask, request, jsonify, render_template
+import json
+from flask import Flask, request, jsonify, render_template, Response
 from flask_cors import CORS
 from datetime import datetime
 
@@ -19,56 +20,51 @@ def home():
 
 @app.route('/api/generate_route', methods=['POST'])
 def generate_route():
+    # 🛡️ 拦截器：确保云端钥匙已配置
+    if not API_KEY:
+        return jsonify({"error": "未检测到 API 密钥。请在 Render 配置 DEEPSEEK_API_KEY！"}), 500
+
+    data = request.json or {}
+    time_mode = data.get('time_mode', 'exact')
+    start_city = data.get('start_city', '').strip()
+    destination = data.get('destination', '').strip()
+    
     try:
-        if not API_KEY:
-            return jsonify({"error": "未检测到 API 密钥。请在 Render 配置 DEEPSEEK_API_KEY！"}), 500
-
-        data = request.json or {}
-        time_mode = data.get('time_mode', 'exact')
-        start_city = data.get('start_city', '').strip()
-        destination = data.get('destination', '').strip()
+        budget = int(data.get('budget', 2000))
+    except:
+        budget = 2000
         
-        try:
-            budget = int(data.get('budget', 2000))
-        except:
-            budget = 2000
-            
-        tags = data.get('tags', '').strip()
-        saving_budget = int(budget * 0.65)
-        luxury_budget = int(budget * 1.8)
+    tags = data.get('tags', '').strip()
+    saving_budget = int(budget * 0.65)
+    luxury_budget = int(budget * 1.8)
 
-        # 🧠 双轨引擎逻辑：根据用户选择的模式构建约束条件
-        if time_mode == 'exact':
-            travel_date = data.get('travel_date', '')
-            return_date = data.get('return_date', '')
-            if not travel_date or not return_date:
-                return jsonify({"error": "精确模式下，去程和返程日期不能为空！"}), 400
-                
-            try:
-                d1 = datetime.strptime(travel_date, "%Y-%m-%d")
-                d2 = datetime.strptime(return_date, "%Y-%m-%d")
-                days = (d2 - d1).days + 1
-            except:
-                days = 3
-                
-            time_constraint = f"📅 去程：{travel_date} | 🔙 返程：{return_date} （精确共计 {days} 天）"
-            rules_constraint = f"""
-1. 航班班次：因为用户给定了具体日期，必须查出真实的航班号（如 JD5177, MU5712 等）及起降时间（HH:MM）。
+    if time_mode == 'exact':
+        travel_date = data.get('travel_date', '')
+        return_date = data.get('return_date', '')
+        if not travel_date or not return_date:
+            return jsonify({"error": "精确模式下，去程和返程日期不能为空！"}), 400
+        try:
+            d1 = datetime.strptime(travel_date, "%Y-%m-%d")
+            d2 = datetime.strptime(return_date, "%Y-%m-%d")
+            days = (d2 - d1).days + 1
+        except:
+            days = 3
+            
+        time_constraint = f"📅 去程：{travel_date} | 🔙 返程：{return_date} （精确共计 {days} 天）"
+        rules_constraint = f"""
+1. 航班班次：必须查出真实的航班号（如 JD5177, MU5712 等）及起降时间（HH:MM）。
 2. 酒店细节：必须给出具体酒店全称及其具体房型和该指定日期的精确价格。
 3. 行程排布：严格按照指定的这 {days} 天跨度写每天路书。"""
-
-        else:
-            # 模糊模式
-            approx_time = data.get('approx_time', '近期')
-            days = data.get('days', '3')
-            time_constraint = f"📅 大致时间：{approx_time} | ⏱️ 游玩天数：{days} 天"
-            rules_constraint = f"""
-1. 交通估价：因为用户时间灵活，请给出该季节/月份的平均航班/高铁估价范围即可，无需指定特定班次。
-2. 酒店建议：推荐适合此季节的酒店类型和区域（如：古城内特色客栈），给出均价范围。
+    else:
+        approx_time = data.get('approx_time', '近期')
+        days = data.get('days', '3')
+        time_constraint = f"📅 大致时间：{approx_time} | ⏱️ 游玩天数：{days} 天"
+        rules_constraint = f"""
+1. 交通估价：给出该季节的平均航班/高铁估价范围即可，无需指定特定班次。
+2. 酒店建议：推荐适合此季节的酒店类型和区域，给出均价范围。
 3. 行程排布：给出一份非常丝滑灵活的 {days} 天打卡路线参考。"""
 
-        # 统合终极提示词
-        system_prompt = f"""你是一位精通数据采集与商业变现的顶级旅游架构师。
+    system_prompt = f"""你是一位精通数据采集与商业变现的顶级旅游架构师。
 当前时间为 2026 年 5 月。请针对以下用户需求，规划三套特制路书。
 
 【用户需求】：
@@ -102,22 +98,42 @@ def generate_route():
 ### 🗺️ {days}天尊享路书：[尊享路线]
 """
 
-        response = requests.post(API_URL, json={
-            "model": "deepseek-chat",
-            "messages": [{"role": "user", "content": system_prompt}],
-            "temperature": 0.1 
-        }, headers={
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
-        }, timeout=60)
+    # 🚀 核心重构：打字机流式输出生成器
+    def generate_stream():
+        try:
+            response = requests.post(API_URL, json={
+                "model": "deepseek-chat",
+                "messages": [{"role": "user", "content": system_prompt}],
+                "temperature": 0.1,
+                "stream": True  # 🔥 开启流式通道，持续活跃防断连！
+            }, headers={
+                "Authorization": f"Bearer {API_KEY}",
+                "Content-Type": "application/json"
+            }, stream=True, timeout=60)
 
-        if response.status_code != 200:
-            return jsonify({"error": f"接口异常: {response.status_code}"}), 500
+            if response.status_code != 200:
+                yield f"data: {json.dumps({'error': f'大模型接口拒绝访问: {response.status_code}'})}\n\n"
+                return
 
-        return jsonify({"result": response.json()['choices'][0]['message']['content']})
+            for line in response.iter_lines():
+                if line:
+                    decoded_line = line.decode('utf-8')
+                    if decoded_line.startswith('data: '):
+                        data_str = decoded_line[6:]
+                        if data_str == '[DONE]':
+                            break
+                        try:
+                            data_json = json.loads(data_str)
+                            chunk = data_json['choices'][0]['delta'].get('content', '')
+                            if chunk:
+                                yield f"data: {json.dumps({'text': chunk})}\n\n"
+                        except:
+                            continue
+        except Exception as e:
+            yield f"data: {json.dumps({'error': f'服务器连接中断: {str(e)}'})}\n\n"
 
-    except Exception as e:
-        return jsonify({"error": f"服务器精算错误: {str(e)}"}), 500
+    # 将数据以流 (Event-Stream) 的形式发给前端
+    return Response(generate_stream(), mimetype='text/event-stream')
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5002, debug=True)
