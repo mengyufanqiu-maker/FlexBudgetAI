@@ -20,9 +20,9 @@ def home():
 
 @app.route('/api/generate_route', methods=['POST'])
 def generate_route():
-    # 🛡️ 拦截器：确保云端保险箱钥匙已配置
+    # 🛡️ 拦截器
     if not API_KEY:
-        return jsonify({"error": "未检测到 API 密钥。请在 Render 后台的 Environment 菜单中配置 DEEPSEEK_API_KEY！"}), 500
+        return jsonify({"error": "未检测到 API 密钥。请在后台环境变量中配置 DEEPSEEK_API_KEY！"}), 500
 
     data = request.json or {}
     time_mode = data.get('time_mode', 'exact')
@@ -41,7 +41,7 @@ def generate_route():
     if not start_city or not destination:
         return jsonify({"error": "出发城市和目的地不能为空！"}), 400
 
-    # 🧠 双轨提示词判定引擎：根据用户前端选的模式切换大模型思考逻辑
+    # 🧠 双轨提示词判定引擎
     if time_mode == 'exact':
         travel_date = data.get('travel_date', '')
         return_date = data.get('return_date', '')
@@ -56,70 +56,74 @@ def generate_route():
         except:
             days = 3
             
-        time_constraint = f"📅 去程日期：{travel_date} | 🔙 返程日期：{return_date} （精确共计 {days} 天）"
+        time_constraint = f"📅 日期：{travel_date} 至 {return_date} （共 {days} 天）"
         rules_constraint = f"""
-1. 航班班次：必须基于 {travel_date} 的去程和 {return_date} 的返程，给出具体的真实航班号（如 JD5177, MU5712 等）及精确的起降时间（HH:MM）。票价必须包含基准价及机建燃油。
-2. 酒店细节：禁止使用模糊推荐。必须给出具体的真实酒店全称及其具体房型和该指定日期的实测精确价格。
-3. 行程排布：严格按照指定的这 {days} 天跨度写每日详细路书及真实的城市通勤时间（40-60分钟）。"""
+1. 交通：极简给出真实航班号(如 JD5177)及起降时间，直接标总价。
+2. 住宿：极简给出具体酒店全称、房型及实测总价。
+3. 行程：每日行程必须浓缩为【一行字结构】（例如：Day1：机场 -> 酒店 -> 核心景区）。禁止长篇大论描述景点风景！"""
     else:
         approx_time = data.get('approx_time', '近期')
         days = data.get('days', '3')
-        time_constraint = f"📅 大致出行时间：{approx_time} | ⏱️ 预计游玩天数：{days} 天"
+        time_constraint = f"📅 大致时间：{approx_time} | ⏱️ 共 {days} 天"
         rules_constraint = f"""
-1. 交通估价：请给出在 {approx_time} 期间该路线的平均航班/高铁估价范围即可，无需指定特定单日班次。
-2. 酒店建议：推荐适合此季节/时段的酒店类型和区域（如：古城内特色客栈），给出合理的均价范围。
-3. 行程排布：给出一份非常丝滑灵活的 {days} 天打卡路线参考。"""
+1. 交通：一句话给出该时段平均航班/高铁估价。
+2. 住宿：一句话推荐酒店类型、区域及均价。
+3. 行程：每日行程必须浓缩为【一行字打卡流】。禁止长篇大论！"""
 
-    system_prompt = f"""你是一位精通大数据精算与商业变现的顶级旅游架构师。当前时间为2026年5月。
-请针对以下用户精准输入的时空约束，并行规划三套特制路书方案。
+    # 🔥 核心防御：给 AI 戴上极度精简的“紧箍咒”
+    system_prompt = f"""你是一位顶级旅游精算师。当前时间为2026年5月。
+请针对以下需求，规划三套路书。
 
-【用户时空输入】：
-- 🛫 出发地：{start_city} | 🎯 目的地：{destination}
-- {time_constraint}
-- 💰 用户预算：{budget} 元 | 🎭 偏好：{tags}
+【用户需求】：🛫 {start_city} ➡️ 🎯 {destination} | {time_constraint} | 💰 预算：{budget}元 | 🎭 偏好：{tags}
 
-【极致真实性输出要求 - 绝不妥协】：{rules_constraint}
-
-4. 格式死命令：你必须严格使用以下三个暗号来分割方案，绝对不准加空格，绝对不准改大小写，否则前端解析系统将崩溃！格式如下：
+【🚨 致命约束 - 绝不妥协】：
+1. 你必须严格使用三个暗号分割方案，不准加空格或改大小写！
+2. 你的输出额度极度有限！每个方案的字数必须极度压缩，废话全删！每日行程用 `A -> B -> C` 的箭头格式一笔带过。
+3. 确保你能一口气把三个方案完整输出到底，绝对不准中途烂尾！格式必须严格如下：
 
 ---PLAN_MATCH---
-# 🎯 方案一：【用户专属定制版】（严格控价：≤ {budget} 元）
-### 📊 核心大账本：[明细，总和 <= {budget}]
-### 🏨 对齐推荐：[交通与住宿详情]
-<div class="affiliate-card"><span>🧡 FlexBudget 特惠：</span><br><a href="https://s.click.taobao.com/mock_match" target="_blank">[点击抢扣特价房态]</a></div>
-### 🗺️ {days}天行程路书：[每日路线]
+# 🎯 方案一：【专属定制版】(≤ {budget} 元)
+### 📊 极简账本：[用一句话写明总预算拆解]
+### 🏨 机酒直达：[精炼的交通与住宿详情]
+<div class="affiliate-card"><span>🧡 特惠：</span><a href="#" target="_blank">[抢特价房态]</a></div>
+### 🗺️ 行程骨架：
+[Day1: xxx -> xxx -> xxx]
+[Day2: xxx -> xxx -> xxx]
 
 ---PLAN_SAVING---
-# 🪙 方案二：【极限穷游节省版】（极限压榨：≤ {saving_budget} 元）
-### 📊 穷游大账本：[明细，总和 <= {saving_budget}]
-### 🏨 省钱推荐：[青旅或硬座详情]
-<div class="affiliate-card"><span>🪙 FlexBudget 特惠：</span><br><a href="https://s.click.taobao.com/mock_saving" target="_blank">[点击秒杀特价票]</a></div>
-### 🗺️ {days}天穷游路书：[穷游路线]
+# 🪙 方案二：【极限穷游版】(≤ {saving_budget} 元)
+### 📊 极简账本：[用一句话写明总预算拆解]
+### 🏨 极限省钱：[青旅/硬座直达]
+<div class="affiliate-card"><span>🪙 特惠：</span><a href="#" target="_blank">[秒杀特价票]</a></div>
+### 🗺️ 行程骨架：
+[Day1: xxx -> xxx]
+[Day2: xxx -> xxx]
 
 ---PLAN_LUXURY---
-# 👑 方案三：【轻奢尊享豪华版】（品质升舱：约 {luxury_budget} 元）
-### 📊 奢华大账本：[明细，总和约 {luxury_budget}]
-### 🏨 奢华推荐：[高端酒店与头等舱详情]
-<div class="affiliate-card" style="border-color: #d97706; background-color: #fef3c7;"><span style="color: #b45309;">👑 黑金通道：</span><br><a href="https://s.click.taobao.com/mock_luxury" target="_blank">[即刻升舱预订]</a></div>
-### 🗺️ {days}天尊享路书：[尊享路线]
+# 👑 方案三：【轻奢尊享版】(约 {luxury_budget} 元)
+### 📊 极简账本：[用一句话写明总预算拆解]
+### 🏨 尊享顶配：[五星/头等舱直达]
+<div class="affiliate-card" style="border-color: #d97706; background-color: #fef3c7;"><span style="color: #b45309;">👑 黑金：</span><a href="#" target="_blank">[升舱预订]</a></div>
+### 🗺️ 行程骨架：
+[Day1: 专车 -> xxx -> 奢华晚餐]
+[Day2: xxx -> xxx]
 """
 
-    # 🚀 核心重构：打字机流式输出生成器
     def generate_stream():
         try:
             response = requests.post(API_URL, json={
                 "model": "deepseek-chat",
                 "messages": [{"role": "user", "content": system_prompt}],
                 "temperature": 0.1,
-                "stream": True,      # 开启流式吐字
-                "max_tokens": 4096   # 🔥 肺活量扩容：彻底根治豪华版截断、烂尾问题
+                "stream": True,      
+                "max_tokens": 4096   # 回归稳定的最大输出额度
             }, headers={
                 "Authorization": f"Bearer {API_KEY}",
                 "Content-Type": "application/json"
             }, stream=True, timeout=60)
 
             if response.status_code != 200:
-                yield f"data: {json.dumps({'error': f'云端大模型拒绝访问，状态码: {response.status_code}'})}\n\n"
+                yield f"data: {json.dumps({'error': f'大模型拒绝访问: {response.status_code}'})}\n\n"
                 return
 
             for line in response.iter_lines():
@@ -137,10 +141,9 @@ def generate_route():
                         except:
                             continue
         except Exception as e:
-            yield f"data: {json.dumps({'error': f'跨国传输网络阻断: {str(e)}'})}\n\n"
+            yield f"data: {json.dumps({'error': f'网络阻断: {str(e)}'})}\n\n"
 
-    # 以 event-stream 媒体类型向前端吐出源源不断的数据流
     return Response(generate_stream(), mimetype='text/event-stream')
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5002, debug=True)
+    app.run(host='0.0.0.0', port=os.environ.get("PORT", 5002), debug=True)
