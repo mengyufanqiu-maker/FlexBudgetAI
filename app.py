@@ -9,7 +9,7 @@ app = Flask(__name__)
 CORS(app)
 
 # ==========================================
-# 🔐 100% 纯净云端架构
+# 🔐 100% 纯净云端架构：绝无明文密钥
 # ==========================================
 API_KEY = os.environ.get("DEEPSEEK_API_KEY")
 API_URL = "https://api.deepseek.com/v1/chat/completions"
@@ -20,9 +20,9 @@ def home():
 
 @app.route('/api/generate_route', methods=['POST'])
 def generate_route():
-    # 🛡️ 拦截器：确保云端钥匙已配置
+    # 🛡️ 拦截器：确保云端保险箱钥匙已配置
     if not API_KEY:
-        return jsonify({"error": "未检测到 API 密钥。请在 Render 配置 DEEPSEEK_API_KEY！"}), 500
+        return jsonify({"error": "未检测到 API 密钥。请在 Render 后台的 Environment 菜单中配置 DEEPSEEK_API_KEY！"}), 500
 
     data = request.json or {}
     time_mode = data.get('time_mode', 'exact')
@@ -38,6 +38,10 @@ def generate_route():
     saving_budget = int(budget * 0.65)
     luxury_budget = int(budget * 1.8)
 
+    if not start_city or not destination:
+        return jsonify({"error": "出发城市和目的地不能为空！"}), 400
+
+    # 🧠 双轨提示词判定引擎：根据用户前端选的模式切换大模型思考逻辑
     if time_mode == 'exact':
         travel_date = data.get('travel_date', '')
         return_date = data.get('return_date', '')
@@ -47,34 +51,36 @@ def generate_route():
             d1 = datetime.strptime(travel_date, "%Y-%m-%d")
             d2 = datetime.strptime(return_date, "%Y-%m-%d")
             days = (d2 - d1).days + 1
+            if days <= 0:
+                return jsonify({"error": "返程日期必须在去程日期之后哦！"}), 400
         except:
             days = 3
             
-        time_constraint = f"📅 去程：{travel_date} | 🔙 返程：{return_date} （精确共计 {days} 天）"
+        time_constraint = f"📅 去程日期：{travel_date} | 🔙 返程日期：{return_date} （精确共计 {days} 天）"
         rules_constraint = f"""
-1. 航班班次：必须查出真实的航班号（如 JD5177, MU5712 等）及起降时间（HH:MM）。
-2. 酒店细节：必须给出具体酒店全称及其具体房型和该指定日期的精确价格。
-3. 行程排布：严格按照指定的这 {days} 天跨度写每天路书。"""
+1. 航班班次：必须基于 {travel_date} 的去程和 {return_date} 的返程，给出具体的真实航班号（如 JD5177, MU5712 等）及精确的起降时间（HH:MM）。票价必须包含基准价及机建燃油。
+2. 酒店细节：禁止使用模糊推荐。必须给出具体的真实酒店全称及其具体房型和该指定日期的实测精确价格。
+3. 行程排布：严格按照指定的这 {days} 天跨度写每日详细路书及真实的城市通勤时间（40-60分钟）。"""
     else:
         approx_time = data.get('approx_time', '近期')
         days = data.get('days', '3')
-        time_constraint = f"📅 大致时间：{approx_time} | ⏱️ 游玩天数：{days} 天"
+        time_constraint = f"📅 大致出行时间：{approx_time} | ⏱️ 预计游玩天数：{days} 天"
         rules_constraint = f"""
-1. 交通估价：给出该季节的平均航班/高铁估价范围即可，无需指定特定班次。
-2. 酒店建议：推荐适合此季节的酒店类型和区域，给出均价范围。
+1. 交通估价：请给出在 {approx_time} 期间该路线的平均航班/高铁估价范围即可，无需指定特定单日班次。
+2. 酒店建议：推荐适合此季节/时段的酒店类型和区域（如：古城内特色客栈），给出合理的均价范围。
 3. 行程排布：给出一份非常丝滑灵活的 {days} 天打卡路线参考。"""
 
-    system_prompt = f"""你是一位精通数据采集与商业变现的顶级旅游架构师。
-当前时间为 2026 年 5 月。请针对以下用户需求，规划三套特制路书。
+    system_prompt = f"""你是一位精通大数据精算与商业变现的顶级旅游架构师。当前时间为2026年5月。
+请针对以下用户精准输入的时空约束，并行规划三套特制路书方案。
 
-【用户需求】：
+【用户时空输入】：
 - 🛫 出发地：{start_city} | 🎯 目的地：{destination}
 - {time_constraint}
 - 💰 用户预算：{budget} 元 | 🎭 偏好：{tags}
 
 【极致真实性输出要求 - 绝不妥协】：{rules_constraint}
 
-4. 格式死命令：你必须严格使用以下三个暗号来分割方案，绝对不准加空格或改变大小写，否则系统将崩溃！
+4. 格式死命令：你必须严格使用以下三个暗号来分割方案，绝对不准加空格，绝对不准改大小写，否则前端解析系统将崩溃！格式如下：
 
 ---PLAN_MATCH---
 # 🎯 方案一：【用户专属定制版】（严格控价：≤ {budget} 元）
@@ -105,14 +111,15 @@ def generate_route():
                 "model": "deepseek-chat",
                 "messages": [{"role": "user", "content": system_prompt}],
                 "temperature": 0.1,
-                "stream": True  # 🔥 开启流式通道，持续活跃防断连！
+                "stream": True,      # 开启流式吐字
+                "max_tokens": 4096   # 🔥 肺活量扩容：彻底根治豪华版截断、烂尾问题
             }, headers={
                 "Authorization": f"Bearer {API_KEY}",
                 "Content-Type": "application/json"
             }, stream=True, timeout=60)
 
             if response.status_code != 200:
-                yield f"data: {json.dumps({'error': f'大模型接口拒绝访问: {response.status_code}'})}\n\n"
+                yield f"data: {json.dumps({'error': f'云端大模型拒绝访问，状态码: {response.status_code}'})}\n\n"
                 return
 
             for line in response.iter_lines():
@@ -120,7 +127,7 @@ def generate_route():
                     decoded_line = line.decode('utf-8')
                     if decoded_line.startswith('data: '):
                         data_str = decoded_line[6:]
-                        if data_str == '[DONE]':
+                        if data_str.strip() == '[DONE]':
                             break
                         try:
                             data_json = json.loads(data_str)
@@ -130,9 +137,9 @@ def generate_route():
                         except:
                             continue
         except Exception as e:
-            yield f"data: {json.dumps({'error': f'服务器连接中断: {str(e)}'})}\n\n"
+            yield f"data: {json.dumps({'error': f'跨国传输网络阻断: {str(e)}'})}\n\n"
 
-    # 将数据以流 (Event-Stream) 的形式发给前端
+    # 以 event-stream 媒体类型向前端吐出源源不断的数据流
     return Response(generate_stream(), mimetype='text/event-stream')
 
 if __name__ == '__main__':
