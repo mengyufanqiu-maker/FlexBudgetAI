@@ -8,48 +8,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        /* 淘系与携程联盟商业广告卡片样式 */
         .affiliate-card { background-color: #fff7ed; border: 2px dashed #f97316; padding: 16px; border-radius: 16px; margin: 16px 0; font-size: 14px; text-align: left; }
         .affiliate-card span { color: #ea580c; font-weight: 800; }
         .affiliate-card a { color: #0284c7; text-decoration: underline; font-weight: bold; margin-left: 4px; }
         
-        /* 网页排版细化调整 */
         .route-body h1 { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 1.75rem 0 0.75rem 0; border-left: 4px solid #f97316; padding-left: 8px; }
-        .route-body h2 { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 1.5rem 0 0.5rem 0; }
-        .route-body h3 { font-size: 1.1rem; font-weight: 700; color: #334155; margin-top: 1rem; }
-        .route-body p { margin-bottom: 0.75rem; line-height: 1.7; color: #475569; }
+        .route-body h2 { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 1.5rem 0 0.5rem 0; background: #f8fafc; padding: 6px 12px; border-radius: 8px; }
+        .route-body h3 { font-size: 1.1rem; font-weight: 700; color: #334155; margin-top: 1.25rem; color: #ea580c; }
+        .route-body p { margin-bottom: 0.75rem; line-height: 1.7; color: #334155; }
         .route-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
         .route-body li { margin-bottom: 0.4rem; color: #475569; }
         
-        /* 胶囊开关样式 */
         .mode-radio:checked + div { background-color: #f97316; color: white; border-color: #f97316; }
         .mode-radio:not(:checked) + div { background-color: white; color: #64748b; border-color: #e2e8f0; }
-        
-        /* 光标闪烁 */
         .cursor-blink { animation: blink 1s step-end infinite; color: #f97316; font-weight: 900; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* ==========================================
-           🖨️ 核心黑科技：A4 纸张 PDF 打印专用媒体查询
-           ========================================== */
         @media print {
-            /* 1. 强行把全屏背景换成纯白，省墨水且极具商务质感 */
             body { background: white !important; color: black !important; padding: 0 !important; }
-            
-            /* 2. 把网页上的牛鬼蛇神（网页头、输入表单、Tab按钮、导出按钮自己）全隐藏 */
             header, form, #tabMenu, .print-hide { display: none !important; }
-            
-            /* 3. 让平时隐藏的 PDF 专属信头强行暴露出来 */
             .print-show-header { display: block !important; }
-            
-            /* 4. 取消网页容器的阴影、圆角和彩色边框，铺满整张 A4 纸 */
             main { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
             .bg-white { box-shadow: none !important; border: none !important; padding: 0 !important; }
-            
-            /* 5. 商业卡片在 PDF 里自动变成干净的细黑线框，且防止卡片被纸张分页硬生生裁断 */
             .affiliate-card { border: 1px solid #cbd5e1 !important; background: #fff !important; page-break-inside: avoid; }
-            
-            /* 6. 防止标题孤零零吊在上一页最后一排（防标题遗落） */
             h1, h2, h3 { page-break-after: avoid; color: #000 !important; }
         }
     </style>
@@ -62,35 +43,31 @@
                 <i class="fa-solid fa-compass text-orange-500 text-2xl"></i>
                 <h1 class="text-xl font-black text-slate-800 tracking-tight">FlexBudget <span class="text-orange-500">AI</span></h1>
             </div>
-            <span class="text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-full font-bold">V5.2 满血 PDF 打印版</span>
+            <span class="text-xs bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-full font-bold">V6.0 OTA级分流引擎</span>
         </div>
     </header>
 
     <main class="max-w-4xl mx-auto px-4 py-8">
         <div class="bg-white p-8 rounded-3xl shadow-xl shadow-orange-100/30 border border-slate-100 mb-8">
-            <div class="text-center mb-8">
-                <h2 class="text-2xl font-black text-slate-800">全网多方案时空智能规划</h2>
-                <p class="text-slate-400 text-sm mt-1">一次生成三套对齐方案，满足不同圈层的特种兵探索欲</p>
-            </div>
-            
-            <div class="flex justify-center mb-8">
-                <div class="inline-flex bg-slate-100 rounded-full p-1 border border-slate-200">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="time_mode" value="exact" class="hidden mode-radio" checked onchange="toggleTimeMode()">
-                        <div class="px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center space-x-2">
-                            <i class="fa-solid fa-plane-lock"></i><span>精确日期 (查票价)</span>
-                        </div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="time_mode" value="rough" class="hidden mode-radio" onchange="toggleTimeMode()">
-                        <div class="px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center space-x-2">
-                            <i class="fa-solid fa-calendar-week"></i><span>灵活时间 (估均价)</span>
-                        </div>
-                    </label>
+            <form id="planForm" onsubmit="startGeneration(event)" class="grid md:grid-cols-2 gap-6">
+                
+                <div class="flex justify-center md:col-span-2">
+                    <div class="inline-flex bg-slate-100 rounded-full p-1 border border-slate-200">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="time_mode" value="exact" class="hidden mode-radio" checked onchange="toggleTimeMode()">
+                            <div class="px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center space-x-2">
+                                <i class="fa-solid fa-plane-lock"></i><span>精确日期 (查票价)</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="time_mode" value="rough" class="hidden mode-radio" onchange="toggleTimeMode()">
+                            <div class="px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 flex items-center space-x-2">
+                                <i class="fa-solid fa-calendar-week"></i><span>灵活时间 (估均价)</span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
-            </div>
 
-            <form id="planForm" onsubmit="submitForm(event)" class="grid md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-street-view text-emerald-500 mr-1"></i> 出发城市</label>
                     <input type="text" id="start_city" placeholder="例如：北京" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
@@ -100,20 +77,20 @@
                     <input type="text" id="destination" placeholder="例如：大理" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition" required>
                 </div>
 
-                <div id="mode_exact_1" class="mode-exact-group">
+                <div id="mode_exact_1">
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-day text-blue-500 mr-1"></i> 去程日期</label>
                     <input type="date" id="travel_date" onchange="updateReturnDateMin()" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                 </div>
-                <div id="mode_exact_2" class="mode-exact-group">
+                <div id="mode_exact_2">
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-calendar-check text-indigo-500 mr-1"></i> 返程日期</label>
                     <input type="date" id="return_date" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                 </div>
 
-                <div id="mode_rough_1" class="mode-rough-group hidden">
+                <div id="mode_rough_1" class="hidden">
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-leaf text-green-500 mr-1"></i> 大致出行时间</label>
-                    <input type="text" id="approx_time" placeholder="例如：暑假 / 国庆节" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
+                    <input type="text" id="approx_time" placeholder="例如：5月中旬 / 暑假" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                 </div>
-                <div id="mode_rough_2" class="mode-rough-group hidden">
+                <div id="mode_rough_2" class="hidden">
                     <label class="block text-sm font-bold text-slate-700 mb-2"><i class="fa-solid fa-clock text-indigo-500 mr-1"></i> 预计游玩天数</label>
                     <select id="days" class="w-full p-3 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-orange-500 transition">
                         <option value="2">2 天 (周末短途)</option>
@@ -134,51 +111,48 @@
                 <div class="md:col-span-2 text-center mt-4">
                     <button type="submit" id="submitBtn" class="bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold py-3.5 px-16 rounded-full shadow-lg shadow-orange-200/50 transition transform hover:-translate-y-0.5 inline-flex items-center space-x-2">
                         <i id="btnIcon" class="fa-solid fa-wand-magic-sparkles"></i>
-                        <span id="btnText">极速流式精算三大档位路书</span>
+                        <span id="btnText">全网对齐深度精算路书</span>
                     </button>
                 </div>
             </form>
         </div>
 
         <section id="resultSection" class="hidden space-y-4">
-            <div id="tabMenu" class="flex space-x-2 bg-slate-200/60 p-1.5 rounded-2xl w-full border border-slate-200 transition-all duration-500">
-                <button onclick="switchTab('match')" id="tab-match" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 bg-white text-orange-600 shadow-sm">
+            
+            <div id="tabMenu" class="flex space-x-2 bg-slate-200/60 p-1.5 rounded-2xl w-full border border-slate-200">
+                <button onclick="clickTab('match')" id="tab-match" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1">
                     <i class="fa-solid fa-bullseye"></i> <span>🎯 核心定制版</span>
                 </button>
-                <button onclick="switchTab('saving')" id="tab-saving" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 text-slate-500 hover:text-slate-700">
+                <button onclick="clickTab('saving')" id="tab-saving" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1">
                     <i class="fa-solid fa-scale-balanced"></i> <span>🪙 极限穷游版</span>
                 </button>
-                <button onclick="switchTab('luxury')" id="tab-luxury" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 text-slate-500 hover:text-slate-700">
+                <button onclick="clickTab('luxury')" id="tab-luxury" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1">
                     <i class="fa-solid fa-crown"></i> <span>👑 尊享豪华版</span>
                 </button>
             </div>
 
             <div class="hidden print-show-header border-b-4 border-slate-900 pb-4 mb-6">
-                <div style="float: right; text-align: right;">
-                    <p style="font-size: 10px; color: #64748b; margin: 0;">REPORT ID: FB-2026-NANO</p>
-                    <p style="font-size: 12px; color: #0f172a; font-weight: bold; margin: 2px 0 0 0;">FlexBudget AI 智能时空测算中心</p>
-                </div>
-                <h1 style="font-size: 26px; font-weight: 900; color: #0f172a; margin: 0; letter-spacing: -1px;">HIGH-PRECISION ITINERARY</h1>
-                <p style="font-size: 13px; color: #475569; margin-top: 4px;">由跨国流式算力生成的云端高精度多方案比价旅行路书</p>
+                <h1 style="font-size: 26px; font-weight: 900; color: #0f172a; margin: 0;">HIGH-PRECISION TRAVEL DOSSIER</h1>
+                <p style="font-size: 13px; color: #475569; margin-top: 4px;">由 Zeabur 边缘算力中心实时流式渲染的高细节路书报告</p>
             </div>
 
             <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden min-h-[350px] relative">
-                
                 <div class="absolute top-6 right-6 print-hide hidden z-10" id="pdfBtnWrapper">
                     <button onclick="window.print()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-md transition flex items-center space-x-1.5">
                         <i class="fa-solid fa-file-pdf text-orange-400"></i>
                         <span>导出当前舱位 PDF</span>
                     </button>
                 </div>
-
                 <div class="p-8 route-body" id="tabContentDisplay"></div>
             </div>
         </section>
     </main>
 
     <script>
-        let planData = { match: '', saving: '', luxury: '' };
-        let fullText = ""; 
+        // 缓存三个独立的超长文本对象
+        let cachedPlans = { match: '', saving: '', luxury: '' };
+        let currentActiveTab = 'match';
+        let isGenerating = false;
 
         function toggleTimeMode() {
             const mode = document.querySelector('input[name="time_mode"]:checked').value;
@@ -200,35 +174,56 @@
             document.getElementById('return_date').min = travelDate;
         }
 
-        async function submitForm(event) {
+        // 初始化第一次大生成
+        function startGeneration(event) {
             event.preventDefault();
+            if(isGenerating) return;
+
+            // 彻底清空所有缓存，准备为新城市算账
+            cachedPlans = { match: '', saving: '', luxury: '' };
+            
+            document.getElementById('resultSection').classList.remove('hidden');
+            fetchTabDetail('match'); // 第一发默认拉取定制版
+        }
+
+        // 点击 Tab 的核心逻辑：如果缓存有，秒切；如果缓存没有，直接发起专线流式调用
+        function clickTab(type) {
+            if(isGenerating) return;
+            currentActiveTab = type;
+            
+            // UI 亮灯样式切换
+            ['match', 'saving', 'luxury'].forEach(t => {
+                const btn = document.getElementById('tab-' + t);
+                btn.className = (t === type) 
+                    ? "flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 bg-white text-orange-600 shadow-sm"
+                    : "flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 text-slate-500 hover:text-slate-700";
+            });
+
+            if(cachedPlans[type]) {
+                // 有缓存，直接秒读
+                document.getElementById('tabContentDisplay').innerHTML = marked.parse(cachedPlans[type]);
+                document.getElementById('pdfBtnWrapper').classList.remove('hidden');
+            } else {
+                // 没缓存，当场向后端索要该单项的无损长方案
+                fetchTabDetail(type);
+            }
+        }
+
+        // 向后端单独发起某一方案高细节获取的专线流式函数
+        async function fetchTabDetail(type) {
+            isGenerating = true;
             const btn = document.getElementById('submitBtn');
-            const btnText = document.getElementById('btnText');
-            const btnIcon = document.getElementById('btnIcon');
-            const resultSection = document.getElementById('resultSection');
-            const tabMenu = document.getElementById('tabMenu');
             const display = document.getElementById('tabContentDisplay');
             const pdfBtnWrapper = document.getElementById('pdfBtnWrapper');
             
-            const mode = document.querySelector('input[name="time_mode"]:checked').value;
-
-            if (mode === 'exact' && (!document.getElementById('travel_date').value || !document.getElementById('return_date').value)) {
-                alert("精确日期模式下，请选择去程和返程日期！"); return;
-            }
-            if (mode === 'rough' && (!document.getElementById('approx_time').value)) {
-                alert("灵活时间模式下，请填写大致出行时间段！"); return;
-            }
-
+            pdfBtnWrapper.classList.add('hidden');
             btn.disabled = true;
-            btnIcon.className = 'fa-solid fa-spinner fa-spin';
-            btnText.innerText = '正在流式接收云端精算数据...';
-            fullText = "";
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> 正在单独注入【${type==='match'?'定制版':type==='saving'?'穷游版':'豪华版'}】炸裂细节...`;
             
-            pdfBtnWrapper.classList.add('hidden'); // 开始时隐藏 PDF 按钮
-            tabMenu.classList.add('opacity-25', 'pointer-events-none'); 
-            resultSection.classList.remove('hidden');
-            display.innerHTML = '<span class="text-orange-500 font-bold animate-pulse"><i class="fa-solid fa-satellite-dish mr-2"></i> 防拦截流式信道已建立，AI 正在一行行打印方案...</span><br><br><span class="cursor-blink">█</span>';
-            resultSection.scrollIntoView({ behavior: 'smooth' });
+            display.innerHTML = `<span class="text-orange-500 font-bold animate-pulse"><i class="fa-solid fa-gears mr-2"></i> 专线数据流连接成功，正在把 4096 字节脑力全部倾注在当前舱位...</span><br><br><span class="cursor-blink">█</span>`;
+
+            const mode = document.querySelector('input[name="time_mode"]:checked').value;
+            let currentText = "";
 
             try {
                 const response = await fetch('/api/generate_route', {
@@ -236,6 +231,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         time_mode: mode,
+                        plan_type: type, // 🚀 告诉后厨，我现在要吃哪一个单独的菜
                         start_city: document.getElementById('start_city').value,
                         destination: document.getElementById('destination').value,
                         travel_date: document.getElementById('travel_date').value,
@@ -246,13 +242,6 @@
                         tags: document.getElementById('tags').value
                     })
                 });
-
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json") && !contentType.includes("event-stream")) {
-                    alert("⚠️ 云端服务器正在重启加载，请静候 30 秒后再次点击生成！");
-                    btn.disabled = false; btnIcon.className = 'fa-solid fa-wand-magic-sparkles'; btnText.innerText = '极速流式精算三大档位路书';
-                    return;
-                }
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder('utf-8');
@@ -271,60 +260,27 @@
                             const dataStr = line.slice(6);
                             try {
                                 const parsed = JSON.parse(dataStr);
-                                if (parsed.error) {
-                                    display.innerHTML = `<span class="text-red-500 font-bold">❌ 错误: ${parsed.error}</span>`;
-                                    throw new Error(parsed.error);
-                                }
                                 if (parsed.text) {
-                                    fullText += parsed.text;
-                                    display.innerHTML = marked.parse(fullText) + '<span class="cursor-blink">█</span>';
+                                    currentText += parsed.text;
+                                    display.innerHTML = marked.parse(currentText) + '<span class="cursor-blink">█</span>';
                                 }
                             } catch (e) {}
                         }
                     }
                 }
 
-                try {
-                    const splitSaving = fullText.split(/---PLAN_SAVING---/i);
-                    planData.match = (splitSaving[0] || "").replace(/---PLAN_MATCH---/i, '');
-                    
-                    if (splitSaving.length > 1) {
-                        const splitLuxury = splitSaving[1].split(/---PLAN_LUXURY---/i);
-                        planData.saving = splitLuxury[0] || "方案结构生成偏差";
-                        planData.luxury = splitLuxury[1] || "方案结构生成偏差";
-                    } else {
-                        planData.match = fullText;
-                        planData.saving = "AI未正确分隔，请直接阅读全文。";
-                        planData.luxury = "AI未正确分隔，请直接阅读全文。";
-                    }
-                } catch (parseError) {
-                    planData.match = fullText;
-                }
-
-                tabMenu.classList.remove('opacity-25', 'pointer-events-none');
-                switchTab('match');
+                // 注入缓存
+                cachedPlans[type] = currentText;
+                clickTab(type); // 触发一次排版定型
 
             } catch (e) {
-                if(!fullText) display.innerHTML = `<span class="text-red-500 font-bold">❌ 链路中断，请确认网络环境或 API 密钥状态。</span>`;
+                display.innerHTML = `<span class="text-red-500 font-bold">❌ 细节注入异常。</span>`;
             }
 
+            isGenerating = false;
             btn.disabled = false;
-            btnIcon.className = 'fa-solid fa-wand-magic-sparkles';
-            btnText.innerText = '极速流式精算三大档位路书';
-        }
-
-        function switchTab(type) {
-            ['match', 'saving', 'luxury'].forEach(t => {
-                const tabBtn = document.getElementById('tab-' + t);
-                if(t === type) {
-                    tabBtn.className = "flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 bg-white text-orange-600 shadow-sm";
-                } else {
-                    tabBtn.className = "flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 text-slate-500 hover:text-slate-700";
-                }
-            });
-            document.getElementById('tabContentDisplay').innerHTML = marked.parse(planData[type] || '暂无数据');
-            document.getElementById('pdfBtnWrapper').classList.remove('hidden'); // 切换完毕（生成结束）后显现 PDF 按钮
-        }
+            btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles mr-1"></i> 全网对齐深度精算路书`;
+        </div>
     </script>
 </body>
 </html>
