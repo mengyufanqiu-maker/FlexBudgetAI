@@ -80,10 +80,10 @@
         <section id="resultSection" class="hidden space-y-4">
             <div class="flex space-x-2 bg-slate-200/60 p-1.5 rounded-2xl w-full border border-slate-200">
                 <button onclick="switchTab('match')" id="tab-match" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 bg-white text-orange-600 shadow-sm">
-                    <i class="fa-solid fa-bullseye"></i> <span>🎯 核心定制版 (最优先)</span>
+                    <i class="fa-solid fa-bullseye"></i> <span>🎯 核心定制版</span>
                 </button>
                 <button onclick="switchTab('saving')" id="tab-saving" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 text-slate-500 hover:text-slate-700">
-                    <i class="fa-solid fa-scale-balanced"></i> <span>🪙 极限节省版</span>
+                    <i class="fa-solid fa-scale-balanced"></i> <span>🪙 极限穷游版</span>
                 </button>
                 <button onclick="switchTab('luxury')" id="tab-luxury" class="flex-1 py-3 text-sm font-bold rounded-xl transition inline-flex items-center justify-center space-x-1 text-slate-500 hover:text-slate-700">
                     <i class="fa-solid fa-crown"></i> <span>👑 尊享豪华版</span>
@@ -108,7 +108,7 @@
 
             btn.disabled = true;
             btnIcon.className = 'fa-solid fa-spinner fa-spin';
-            btnText.innerText = '正在并行精算三大账本...';
+            btnText.innerText = '正在调动大模型高精度精算...';
             resultSection.classList.add('hidden');
 
             try {
@@ -127,19 +127,37 @@
                 
                 const data = await response.json();
                 if (response.ok) {
-                    const rawResult = data.result;
-                    planData.match = rawResult.split('---PLAN_SAVING---')[0].replace('---PLAN_MATCH---', '');
-                    const remainder = rawResult.split('---PLAN_SAVING---')[1];
-                    planData.saving = remainder.split('---PLAN_LUXURY---')[0];
-                    planData.luxury = remainder.split('---PLAN_LUXURY---')[1];
+                    const rawResult = data.result || "";
+                    
+                    // 🛡️ 终极防爆解析逻辑：用正则兼容大模型加空格的乱写行为
+                    try {
+                        const splitSaving = rawResult.split(/---PLAN_SAVING---/i);
+                        planData.match = (splitSaving[0] || "").replace(/---PLAN_MATCH---/i, '');
+                        
+                        if (splitSaving.length > 1) {
+                            const splitLuxury = splitSaving[1].split(/---PLAN_LUXURY---/i);
+                            planData.saving = splitLuxury[0] || "AI生成结构有偏差，请重试";
+                            planData.luxury = splitLuxury[1] || "AI生成结构有偏差，请重试";
+                        } else {
+                            // 如果 AI 完全忘记写分割线，直接把所有内容塞进第一页，防止崩溃
+                            planData.match = rawResult;
+                            planData.saving = "模型未正确分割方案，所有内容已展示在【定制版】中。";
+                            planData.luxury = "模型未正确分割方案，所有内容已展示在【定制版】中。";
+                        }
+                    } catch (parseError) {
+                        console.error("解析错误", parseError);
+                        planData.match = rawResult;
+                    }
 
                     switchTab('match');
                     resultSection.classList.remove('hidden');
                     resultSection.scrollIntoView({ behavior: 'smooth' });
                 } else {
-                    alert('精算错误: ' + data.error);
+                    alert('精算错误: ' + (data.error || '未知错误'));
                 }
-            } catch (e) { alert('链路异常: ' + e); }
+            } catch (e) { 
+                alert('网络或接口异常: ' + e); 
+            }
 
             btn.disabled = false;
             btnIcon.className = 'fa-solid fa-wand-magic-sparkles';
